@@ -1,0 +1,50 @@
+CREATE TABLE Employee (
+    EMPLOYEE_ID NUMBER,
+    E_NAME VARCHAR2(50),
+    DEPT_ID NUMBER,
+    DEPT_NAME VARCHAR2(50)
+);
+
+CREATE OR REPLACE TRIGGER trg_before_insert_emp
+BEFORE INSERT ON Employee
+FOR EACH ROW
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Inserting employee into department: ' || :NEW.DEPT_NAME);
+END;
+/
+
+SET SERVEROUTPUT ON;
+
+INSERT INTO Employee (EMPLOYEE_ID, E_NAME, DEPT_ID, DEPT_NAME)
+VALUES (101, 'Ravi', 10, 'Sales');
+
+
+CREATE TABLE Customer (
+    CUSTOMERID NUMBER PRIMARY KEY,
+    NAME VARCHAR2(50)
+);
+CREATE TABLE Account (
+    ACCOUNTID NUMBER PRIMARY KEY,
+    BALANCE NUMBER
+);
+INSERT INTO Customer VALUES (1, 'Ajay');
+INSERT INTO Customer VALUES (2, 'Rahul');
+
+INSERT INTO Account VALUES (1, 5000);
+
+CREATE OR REPLACE TRIGGER trg_block_customer_delete
+BEFORE DELETE ON Customer
+FOR EACH ROW
+DECLARE
+    v_count NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO v_count
+    FROM Account
+    WHERE ACCOUNTID = :OLD.CUSTOMERID;
+
+    IF v_count > 0 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Cannot delete customer with accounts.');
+    END IF;
+END;
+/
+DELETE FROM Customer WHERE CUSTOMERID = 1;
